@@ -12,10 +12,10 @@ cd transformers/
 pip install -e .
 ```
 
-To show you how to train the discriminator, we will use GSM8K to illustrate. 
 
 
 ## Discriminator Training
+To show you how to train the discriminator, we will use GSM8K to illustrate. 
 ### Step 1: Negative Sampling 
 ```
 WANDB_MODE=disabled python sample_negative_solutions.py --in_file data/$TASK/train.jsonl \
