@@ -27,7 +27,7 @@ WANDB_MODE=disabled python sample_negative_solutions.py --in_file data/$TASK/tra
                                 --do_sample --seed 23 \
                                 --bf16 --batch_size 256  --max_length 256 --sample_calc
 ```
-All parameters are self-explanatory, but `--sample_calc` means we will use calculator sampling. That is whenever an operation such as << 4 + 5=9 >> is generated, we will invoke a calculator module to compute the result. 
+All parameters are self-explanatory, but `--sample_calc` means we will use calculator sampling. That is whenever an operation such as `<< 4 + 5=9 >>` is generated, we will invoke a calculator module to compute the result. 
 
 ### Steps 2 and 3: Alignment and Discriminator Training
 Now we want to train a FLAN-T5 encoder as a discriminator over the sampled solutions. 
@@ -69,4 +69,19 @@ relevant arguments are:
 * `--n_self_consistency`: the number of samples to use for self-consistency with grace. If set to one, then no majority voting is applied.
 * `--max_steps`: Maximum steps per sampled solution.
 * `--step_sampling_method`: how we sample candidate steps
-* `--n_candidate_steps`: number of candidate steps to sample and score. 
+* `--n_candidate_steps`: number of candidate steps to sample and score.
+
+
+## Trained Models
+We will upload the fine-tuned models and discriminators used in the paper soon. 
+
+## Citation
+If you use this code, please consider citing out paper
+```
+@article{khalifa2023discriminator,
+  title={Discriminator-Guided Multi-step Reasoning with Language Models},
+  author={Khalifa, Muhammad and Logeswaran, Lajanugen and Lee, Moontae and Lee, Honglak and Wang, Lu},
+  journal={arXiv preprint arXiv:2305.14934},
+  year={2023}
+}
+```
