@@ -1,0 +1,7 @@
+ckpt/*
+train_data/*
+topic_human_evals/*
+**/*.zip
+__pycache__/*
+**/*.log
+**/*.pyc
