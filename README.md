@@ -52,6 +52,7 @@ All parameters are self-explanatory too, except for:
 
 
 ## Stepwise Guided Decoding
+Now we run the guided decoding using the trained discriminator. 
 ```
 TASK=gsm8k
 WANDB_MODE=disabled python run_grace.py \
