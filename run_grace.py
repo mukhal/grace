@@ -15,7 +15,7 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer, LlamaTokenizer
 from constants import *
 from grace.t5_discriminator import T5Discriminator, T5EnergyDiscriminator
 from verifier_utils.t5_verifier import T5Verifier
-from grace.reason import predict_reasoning
+from grace.reason import generate_guided_reasoning
 import json
 from data_utils.utils import prepare_icl_input, create_demos, is_correct, extract_answer, is_correct_program, extract_answer_program, extract_answer_llc
 import wandb
@@ -200,27 +200,20 @@ def main(args):
             gen_sols = []
 
             for _ in range(n_samples):
-                results = predict_reasoning(
+                results = generate_guided_reasoning(
                                 model=model, 
                                 model_tokenizer=tokenizer,
                                 discriminator=discriminator,
                                 disc_tokenizer = disc_tokenizer,
                                 model_input_text=qn_with_input,
                                 disc_input_text=disc_input, 
-                                precondition_topk=args.precondition_topk,
-                                do_sample=args.do_sample,
-                                length_cutoff=args.length_cutoff,
-                                condition_lambda=args.condition_lambda,
+                                n_candidate_steps=args.n_candidate_steps,
+                                beta=args.beta,
                                 generation_type=args.generation_type,
                                 args=args,
                                 )
         
                 sol = results[0]
-                #print("Question: {}".format(qn))
-                #print("Solution: {}".format(sol))
-                #if is_correct(sol, gt_ans, args.task):
-                #    print("Correct!")
-
                 gen_sols.append(sol)
             
             if not args.use_verifier: ## self-consistency
@@ -330,16 +323,16 @@ def main(args):
             trajs = []
             is_cor = []
             for _ in range(args.n_samples_per_example):
-                results = predict_reasoning(
+                results = generate_guided_reasoning(
                                 model, 
                                 disc_tokenizer, 
                                 discriminator, 
                                 model_input_text=qn_with_input,
                                 disc_input_text=disc_input, 
-                                precondition_topk=args.precondition_topk,
+                                n_candidate_steps=args.n_candidate_steps,
                                 do_sample=args.do_sample,
                                 length_cutoff=args.length_cutoff,
-                                condition_lambda=args.condition_lambda,
+                                beta=args.beta,
                                 generation_type=args.generation_type,
                                 args=args,
                                 )
@@ -374,10 +367,8 @@ if __name__=='__main__':
     parser.add_argument('--model_tokenizer_path', type=str, default=None)
     parser.add_argument('--in_file', type=str, default=None, required=True, help='file containing text to run pred on')
     parser.add_argument('--task', type=str, default='gsm8k', choices=TASKS)
-    parser.add_argument('--precondition_topk', type=int, default=20, help='consider top k outputs from gpt at each step before conditioning and re-pruning')
-    parser.add_argument('--do_sample', action='store_true', default=False, help='sample or greedy; only greedy implemented')
-    parser.add_argument('--condition_lambda', type=float, default=0.85, help='lambda weight on conditioning model')
-    parser.add_argument('--length_cutoff', type=int, default=256, help='max length')
+    parser.add_argument('--n_candidate_steps', type=int, default=20, help='number of candidate steps to sample and score')
+    parser.add_argument('--beta', type=float, default=0.85, help='weight of the discriminator score')
     parser.add_argument('--max_length', type=int, default=256, help='max length')
     parser.add_argument('--seed', type=int, default=1, help='random seed')
     parser.add_argument('--device1', type=str, default='cuda:0')
@@ -408,12 +399,10 @@ if __name__=='__main__':
     parser.add_argument('--output_results_dir', type=str, default=None, help='output results dir')
     parser.add_argument('--sample_calc', default=True, type= lambda x: (str(x).lower() in ['true','1', 'yes']),
                          help='whether to use calculator for sampling (mainly for GSM8K')
-    parser.add_argument('--qrs_beta', type=float, default=1.0, help='beta for qrs')
     parser.add_argument('--step_selection_method', type=str, default='greedy', choices=['greedy', 'sample'], help="how to select next step after ranking")
     parser.add_argument('--step_delimiter', type=str, default='|', choices=['|', '. ', ';'], help='delimiter to use for stepwise sampling')
     parser.add_argument('--n_self_consistency', type=int, default=1, help='number of samples to use for majority voting')
-    parser.add_argument('--normalize_disc_scores', default=True, type= lambda x: (str(x).lower() in ['true','1', 'yes']))
-
+    parser.add_argument('--normalize_disc_scores', default=True, type= lambda x: (str(x).lower() in ['true','1', 'yes']), help='whether to normalize discriminator scores over candidate steps')
     ## further sampling params
     parser.add_argument('--goal', type=str, default='eval', choices=['eval', 'sample'], help="whether to solve or sample trajectories for further training")
     parser.add_argument('--n_samples_per_example', type=int, default=10, help='number of samples to generate per question')
