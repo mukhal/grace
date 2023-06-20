@@ -7,8 +7,6 @@ from data_utils.utils import strip_computations
 from openai.embeddings_utils import get_embedding
 import openai, time
 
-openai.api_key = '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'
-
 class OpenAIEmbedder:
     def __init__(self, model='text-embedding-ada-002'):
         self.model = model
