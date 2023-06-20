@@ -26,8 +26,8 @@ def generate_guided_reasoning(model,
             disc_tokenizer,
             model_input_text, 
             disc_input_text, 
-            n_candidate_steps=200, 
-            beta=1.0,
+            n_candidate_steps=10, 
+            beta=0.5,
             generation_type='token',
             args=None
             ):
