@@ -54,7 +54,6 @@ All parameters are self-explanatory too, except for:
 ## Stepwise Guided Decoding
 Now we run the guided decoding using the trained discriminator. 
 ```
-TASK=gsm8k
 WANDB_MODE=disabled python run_grace.py \
                         --model_name_or_path path-to-lm/ \
                         --in_file data/gsm8k/dev.jsonl \
@@ -75,6 +74,9 @@ relevant arguments are:
 
 ## Trained Models
 We will upload the fine-tuned models and discriminators used in the paper soon. 
+
+## Coming Soon
+A multitask-trained discriminator on several reasoning tasks! 
 
 ## Citation
 If you use this code, please consider citing out paper
