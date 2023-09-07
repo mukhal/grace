@@ -58,7 +58,7 @@ WANDB_MODE=disabled python run_grace.py \
                         --model_name_or_path path-to-lm/ \
                         --in_file data/gsm8k/dev.jsonl \
                         --task gsm8k \
-                        --disc_path ckpts/discrim/flan_t5_large_gsm8k/ \
+                        --disc_path ckpts/discrim/flan-t5-gsm8k/ \
                         --beta 0.1 --n_candidate_steps 20 --generation_type step-score \
                         --step_sampling_method top_p --device2 cuda:0 --top_p .95 --sample_calc true \
                         --max_steps 6  --max_step_length 60 --step_delimiter '|' --temperature .8  --n_self_consistency 1 --seed 42
@@ -73,13 +73,23 @@ relevant arguments are:
 
 
 ## Trained Models
-We will upload the fine-tuned models and discriminators used in the paper soon. 
+You first need to install [huggingface_hub](https://github.com/huggingface/huggingface_hub/tree/main):
+```
+pip install huggingface_hub
+```
+
+Then, you can use the `download_models.py` script to download the trained discriminators. 
+For example, to download the GSM8K discriminator trained on sampled from FLAN-T5-Large: 
+```
+python download_models.py --task gsm8k --lm flan-t5
+```
+Which will save the downloaded model to `ckpts/discrim/' 
 
 ## Coming Soon
 A multitask-trained discriminator on several reasoning tasks! 
 
 ## Citation
-If you use this code, please consider citing out paper
+If you use this code, please consider citing our paper
 ```
 @article{khalifa2023discriminator,
   title={Discriminator-Guided Multi-step Reasoning with Language Models},
