@@ -1,5 +1,5 @@
 # GRACE Decoding
-Discriminator-guided Multi-step Reasoning with Language Models 
+Discriminator-guided Multi-step Reasoning with Language Models - [[**Preprint**]](https://arxiv.org/abs/2305.14934), [[**Website**]](https://mukhal.github.io/grace/)
 
 ![image](https://github.com/mukhal/grace-decoding/assets/5109053/cdb93474-1613-47d8-9bf4-be2ae3086979)
 
@@ -12,10 +12,10 @@ cd transformers/
 pip install -e .
 ```
 
-To show you how to train the discriminator, we will use GSM8K to illustrate. 
 
 
 ## Discriminator Training
+To show you how to train the discriminator, we will use GSM8K to illustrate. 
 ### Step 1: Negative Sampling 
 ```
 WANDB_MODE=disabled python sample_negative_solutions.py --in_file data/$TASK/train.jsonl \
@@ -52,8 +52,8 @@ All parameters are self-explanatory too, except for:
 
 
 ## Stepwise Guided Decoding
+Now we run the guided decoding using the trained discriminator. 
 ```
-TASK=gsm8k
 WANDB_MODE=disabled python run_grace.py \
                         --model_name_or_path path-to-lm/ \
                         --in_file data/gsm8k/dev.jsonl \
@@ -74,6 +74,9 @@ relevant arguments are:
 
 ## Trained Models
 We will upload the fine-tuned models and discriminators used in the paper soon. 
+
+## Coming Soon
+A multitask-trained discriminator on several reasoning tasks! 
 
 ## Citation
 If you use this code, please consider citing out paper
