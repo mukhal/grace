@@ -86,7 +86,7 @@ python download_models.py --task gsm8k --lm flan-t5
 Which will save the downloaded model to `ckpts/discrim/'
 
 
-**Note:** Not all the discriminators have been uploaded yet. Will keep uploading more over the next few weeks.
+**Note:** Not all the discriminators have been uploaded yet. Will keep uploading more over the next few days.
 
 ## Coming Soon
 A multitask-trained discriminator on several reasoning tasks! 
