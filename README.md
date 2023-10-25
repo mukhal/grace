@@ -95,9 +95,10 @@ A multitask-trained discriminator on several reasoning tasks!
 If you use this code, please consider citing our paper
 ```
 @article{khalifa2023discriminator,
-  title={Discriminator-Guided Multi-step Reasoning with Language Models},
+  title={GRACE: Discriminator-Guided Chain-of-Thought Reasoning},
   author={Khalifa, Muhammad and Logeswaran, Lajanugen and Lee, Moontae and Lee, Honglak and Wang, Lu},
-  journal={arXiv preprint arXiv:2305.14934},
-  year={2023}
+  booktitle={The 2023 Conference on Empirical Methods in Natural Language Processing},
+  year={2023},
+  url={https://openreview.net/forum?id=2MiTZxLFA9}
 }
 ```
