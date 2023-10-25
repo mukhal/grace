@@ -94,7 +94,7 @@ A multitask-trained discriminator on several reasoning tasks!
 ## Citation
 If you use this code, please consider citing our paper
 ```
-@article{khalifa2023discriminator,
+@article{grace2023,
   title={GRACE: Discriminator-Guided Chain-of-Thought Reasoning},
   author={Khalifa, Muhammad and Logeswaran, Lajanugen and Lee, Moontae and Lee, Honglak and Wang, Lu},
   booktitle={The 2023 Conference on Empirical Methods in Natural Language Processing},
