@@ -28,10 +28,12 @@ WANDB_MODE=disabled python sample_negative_solutions.py --in_file data/$TASK/tra
 ```
 All parameters are self-explanatory, but `--sample_calc` means we will use calculator sampling. That is whenever an operation such as `<< 4 + 5=9 >>` is generated, we will invoke a calculator module to compute the result. 
 
-### Steps 2 and 3: Alignment and Discriminator Training
+### Steps 2 and 3: Trajectory alignment and discriminator training with max-margin
+
+Now we want to train a FLAN-T5 encoder as a discriminator over the sampled solutions: 
 <p align="center"> <img src="https://github.com/mukhal/grace/assets/5109053/ebbefdc2-0861-4fbc-ad0f-43316741bf58" alt="Description of the image" width="800" height="250"> </p>
 
-Now we want to train a FLAN-T5 encoder as a discriminator over the sampled solutions. 
+
 ```
 accelerate launch  --mixed_precision=bf16  --num_processes=$GPUS_PER_NODE train_discriminator.py  --task gsm8k \
                         --trajectory_path path-to-sampled-solutions/trajectories.jsonl \
