@@ -75,7 +75,7 @@ relevant arguments are:
 * `--n_candidate_steps`: number of candidate steps to sample and score.
 
 
-## Trained Checkpoints
+## Pre-trained Checkpoints
 You first need to install [huggingface_hub](https://github.com/huggingface/huggingface_hub/tree/main):
 ```
 pip install huggingface_hub
