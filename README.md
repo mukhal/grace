@@ -75,7 +75,7 @@ relevant arguments are:
 * `--n_candidate_steps`: number of candidate steps to sample and score.
 
 
-## Trained Models
+## Trained Checkpoints
 You first need to install [huggingface_hub](https://github.com/huggingface/huggingface_hub/tree/main):
 ```
 pip install huggingface_hub
@@ -93,7 +93,7 @@ Which will save the downloaded model to `ckpts/discrim/'
 
 ## Citation
 If you use this code, please consider citing our paper
-```
+```python
 @article{grace2023,
   title={GRACE: Discriminator-Guided Chain-of-Thought Reasoning},
   author={Khalifa, Muhammad and Logeswaran, Lajanugen and Lee, Moontae and Lee, Honglak and Wang, Lu},
