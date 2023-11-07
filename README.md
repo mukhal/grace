@@ -2,6 +2,16 @@
 
 ![image](https://github.com/mukhal/grace-decoding/assets/5109053/cdb93474-1613-47d8-9bf4-be2ae3086979)
 
+
+# Updates:
+
+**November 2023**: All GRACE discriminator checkpoints are available for all six tasks ⭐!  
+
+**October 2023:** GRACE was accepted to Findings of EMNLP 2023 🎉🎉!!
+
+**July 2023:** Uploaded GRACE discriminator pre-trained checkpoint for GSM8K. 
+
+
 # Instructions 
 
 ## Setup 
@@ -82,14 +92,14 @@ pip install huggingface_hub
 ```
 
 Then, you can use the `download_models.py` script to download the trained discriminators. 
-For example, to download the GSM8K discriminator trained on sampled from FLAN-T5-Large: 
+For example, to download the GSM8K discriminator trained on samples from FLAN-T5-Large: 
 ```
-python download_models.py --task gsm8k --lm flan-t5
+python download_models.py --task gsm8k
 ```
 Which will save the downloaded model to `ckpts/discrim/'
 
+Discriminators are available for all tasks: `gsm8k, svamp, multiarith, mathqa, tso, coin_flip`. 
 
-**Note:** Not all the discriminators have been uploaded yet. Will keep uploading more over the next few days.
 
 ## Citation
 If you use this code, please consider citing our paper
