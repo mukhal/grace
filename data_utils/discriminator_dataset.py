@@ -18,8 +18,6 @@ TASK_TO_STEP_DELIMITER = {
     "mathqa": ";",
     "multiarith": "|",
     "svamp": "|",
-    "asdiv": ";",
-    "last_letter_concatenation": "|",
     "tso": "|",
 }
     

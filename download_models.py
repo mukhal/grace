@@ -3,12 +3,18 @@ import argparse
 from huggingface_hub import snapshot_download
 
 CACHE_DIR = '.cache'
-AVAILABLE_MODELS = ['mkhalifa/grace-discrim-flan-t5-gsm8k']
+AVAILABLE_MODELS = ['mkhalifa/grace-discrim-gsm8k', 
+                    'mkhalifa/grace-discrim-svamp',
+                    'mkhalifa/grace-discrim-multiarith', 
+                    'mkhalifa/grace-discrim-mathqa',
+                    'mkhalifa/grace-discrim-tso',
+                    'mkhalifa/grace-discrim-coin_flip']
+
 CKPT_DIR = 'ckpts/discrim/'
 
 
 def main(args):
-    repo_id = 'mkhalifa/grace-discrim-{}-{}'.format(args.lm, args.task)
+    repo_id = 'mkhalifa/grace-discrim-{}'.format(args.task)
     assert repo_id in AVAILABLE_MODELS, "Model not available"
 
     save_dir = os.path.join(CKPT_DIR, repo_id.split('/')[-1]).replace('grace-discrim-', '')
@@ -26,7 +32,6 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default='gsm8k')
-    parser.add_argument('--lm', type=str, default='flan-t5', choices=['flan-t5', 'llama-7b', 'llama-13b'])
 
     args = parser.parse_args()
     main(args)
