@@ -5,11 +5,11 @@
 
 # Updates:
 
-**November 2023**: All GRACE discriminator checkpoints are available for all six tasks ⭐!  
+**November 2023**: All GRACE discriminator checkpoints 🤖 are available for all six tasks!  
 
 **October 2023:** GRACE was accepted to Findings of EMNLP 2023 🎉🎉!!
 
-**July 2023:** Uploaded GRACE discriminator pre-trained checkpoint for GSM8K. 
+**May 2023:** GRACE is uploaded to arXiv and training and generation code is made available.
 
 
 # Instructions 
