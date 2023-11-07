@@ -1,5 +1,4 @@
-# GRACE Decoding
-Discriminator-guided Multi-step Reasoning with Language Models - [[**Preprint**]](https://arxiv.org/abs/2305.14934), [[**Website**]](https://mukhal.github.io/grace/)
+# Discriminator-Guided Chain-of-Thought Reasoning  
 
 ![image](https://github.com/mukhal/grace-decoding/assets/5109053/cdb93474-1613-47d8-9bf4-be2ae3086979)
 
@@ -29,8 +28,12 @@ WANDB_MODE=disabled python sample_negative_solutions.py --in_file data/$TASK/tra
 ```
 All parameters are self-explanatory, but `--sample_calc` means we will use calculator sampling. That is whenever an operation such as `<< 4 + 5=9 >>` is generated, we will invoke a calculator module to compute the result. 
 
-### Steps 2 and 3: Alignment and Discriminator Training
-Now we want to train a FLAN-T5 encoder as a discriminator over the sampled solutions. 
+### Steps 2 and 3: Trajectory alignment and discriminator training with max-margin
+
+Now we want to train a FLAN-T5 encoder as a discriminator over the sampled solutions: 
+<p align="center"> <img src="https://github.com/mukhal/grace/assets/5109053/ebbefdc2-0861-4fbc-ad0f-43316741bf58" alt="Description of the image" width="800" height="250"> </p>
+
+
 ```
 accelerate launch  --mixed_precision=bf16  --num_processes=$GPUS_PER_NODE train_discriminator.py  --task gsm8k \
                         --trajectory_path path-to-sampled-solutions/trajectories.jsonl \
@@ -58,7 +61,7 @@ WANDB_MODE=disabled python run_grace.py \
                         --model_name_or_path path-to-lm/ \
                         --in_file data/gsm8k/dev.jsonl \
                         --task gsm8k \
-                        --disc_path ckpts/discrim/flan_t5_large_gsm8k/ \
+                        --disc_path ckpts/discrim/flan-t5-gsm8k/ \
                         --beta 0.1 --n_candidate_steps 20 --generation_type step-score \
                         --step_sampling_method top_p --device2 cuda:0 --top_p .95 --sample_calc true \
                         --max_steps 6  --max_step_length 60 --step_delimiter '|' --temperature .8  --n_self_consistency 1 --seed 42
@@ -72,19 +75,30 @@ relevant arguments are:
 * `--n_candidate_steps`: number of candidate steps to sample and score.
 
 
-## Trained Models
-We will upload the fine-tuned models and discriminators used in the paper soon. 
+## Pre-trained Checkpoints
+You first need to install [huggingface_hub](https://github.com/huggingface/huggingface_hub/tree/main):
+```
+pip install huggingface_hub
+```
 
-## Coming Soon
-A multitask-trained discriminator on several reasoning tasks! 
+Then, you can use the `download_models.py` script to download the trained discriminators. 
+For example, to download the GSM8K discriminator trained on sampled from FLAN-T5-Large: 
+```
+python download_models.py --task gsm8k --lm flan-t5
+```
+Which will save the downloaded model to `ckpts/discrim/'
+
+
+**Note:** Not all the discriminators have been uploaded yet. Will keep uploading more over the next few days.
 
 ## Citation
-If you use this code, please consider citing out paper
-```
-@article{khalifa2023discriminator,
-  title={Discriminator-Guided Multi-step Reasoning with Language Models},
+If you use this code, please consider citing our paper
+```python
+@article{grace2023,
+  title={GRACE: Discriminator-Guided Chain-of-Thought Reasoning},
   author={Khalifa, Muhammad and Logeswaran, Lajanugen and Lee, Moontae and Lee, Honglak and Wang, Lu},
-  journal={arXiv preprint arXiv:2305.14934},
-  year={2023}
+  booktitle={The 2023 Conference on Empirical Methods in Natural Language Processing},
+  year={2023},
+  url={https://openreview.net/forum?id=2MiTZxLFA9}
 }
 ```
