@@ -72,11 +72,7 @@ def main(args):
             discriminator.t5.resize_token_embeddings(len(disc_tokenizer))
             discriminator.load_state_dict(ckpt['state_dict'])
         elif args.generation_type in ['step-score', 'step-qrs']:
-            disc_backbone = 'google/flan-t5-base' 
-            if 'large' in args.disc_path:
-                disc_backbone = 'google/flan-t5-large'
-            if 'small' in args.disc_path:
-                disc_backbone = 'google/flan-t5-small'
+            disc_backbone = 'google/flan-t5-large'
             discriminator = T5EnergyDiscriminator(model_name_or_path=disc_backbone, 
             device=args.device2, args=args)
             discriminator.model.resize_token_embeddings(len(disc_tokenizer))
@@ -164,7 +160,7 @@ def main(args):
         wandb.log({"outputs": text_table})
         return
 
-    if args.task in ["asdiv", "mathqa"]:
+    if args.task in ["mathqa"]:
         assert args.step_delimiter.strip() == ';', "Step delimiter for {} should be ;"
     elif args.task in ["gsm8k", "svamp", "multiarith", "coin_flip"] and not args.icl:
         ## not few-shot 
@@ -428,12 +424,8 @@ if __name__=='__main__':
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-   
-    wandb.init(project="reaso-dec", entity="muhammad-khalifa")
-    wandb.config.update(args)
 
     ## print args
-
-    #print('args', json.dumps(vars(args), indent=4, sort_keys=True))
+    print('args', json.dumps(vars(args), indent=4, sort_keys=True))
 
     main(args)
