@@ -58,6 +58,7 @@ accelerate launch  --mixed_precision=bf16  --num_processes=$GPUS_PER_NODE train_
                         --bf16 --gradient_accumulation_steps 2 --pooling "max" --report_to 'none' \
                         --step_aligner_model roscoe --max_alignment_cost 3.0
 ```
+
 All parameters are self-explanatory too, except for: 
 * `--step_aligner_model`: the model used for alignment (`roscoe`, `simcse`, or `openai` embeddings).
 * `--max_alignment_cost`: The maximum alignment cost between a sampled solution and the reference solution. If the alignment cost is not above this value, the sampled solution is not used to create examples for the discriminator
@@ -77,6 +78,7 @@ WANDB_MODE=disabled python run_grace.py \
                         --max_steps 6  --max_step_length 60 --step_delimiter '|' --temperature .8  --n_self_consistency 1 --seed 42
 ```
 relevant arguments are:
+* `--model_name_or_path`: path to the generator/LM model. To use the fine-tuned FLAN-T5-Large models used in the paper experiments for GSM8K, SVAMP, and MathQA, pass `mkhalifa/flan-t5-large-gsm8k` or `mkhalifa/flan-t5-large-svamp` or `mkhalifa/flan-t5-large-mathqa`. 
 * `--generation_type`: how we guide decoding. `step-score` is the method described in the paper.
 * `--step_delimiter`: the step delimiter token used (used to stop generation at the end of a given steps when sampling candidate steps). We use `|` for gsm8k, SVAMP, and MultiArith and `;` for MathQA.
 * `--n_self_consistency`: the number of samples to use for self-consistency with grace. If set to one, then no majority voting is applied.
@@ -85,7 +87,7 @@ relevant arguments are:
 * `--n_candidate_steps`: number of candidate steps to sample and score.
 
 
-## Pre-trained Checkpoints
+## Pre-trained Discriminator Checkpoints
 You first need to install [huggingface_hub](https://github.com/huggingface/huggingface_hub/tree/main):
 ```
 pip install huggingface_hub
