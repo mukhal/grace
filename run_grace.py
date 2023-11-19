@@ -176,182 +176,127 @@ def main(args):
     else:
         raise NotImplementedError("Task {} not implemented!".format(args.task))
     
-    if args.goal == 'eval':
-        print("Evaluating generator with discriminator")
 
-        solve_rate = 0
+    print("Running guided decoding...")
 
-        if args.use_verifier:
-            all_solutions = []
+    solve_rate = 0
 
-        for inp in tqdm(eval_examples):
-            qn, gt_ans = inp['question'], (inp['answer'] if 'answer' in inp else inp['gt_sol'])
+    if args.use_verifier:
+        all_solutions = []
 
-            qn_with_input = prepare_icl_input(qn, demos=demos, instruction=args.instruction)
-            disc_input = qn
-            if not disc_input.startswith(Q_DELIM):
-                disc_input = Q_DELIM + " " + disc_input
-            
-            n_samples = args.n_verifier_samples if args.use_verifier else args.n_self_consistency
-            gen_sols = []
+    for inp in tqdm(eval_examples):
+        qn, gt_ans = inp['question'], (inp['answer'] if 'answer' in inp else inp['gt_sol'])
 
-            for _ in range(n_samples):
-                results = generate_guided_reasoning(
-                                model=model, 
-                                model_tokenizer=tokenizer,
-                                discriminator=discriminator,
-                                disc_tokenizer = disc_tokenizer,
-                                model_input_text=qn_with_input,
-                                disc_input_text=disc_input, 
-                                n_candidate_steps=args.n_candidate_steps,
-                                beta=args.beta,
-                                generation_type=args.generation_type,
-                                args=args,
-                                )
+        qn_with_input = prepare_icl_input(qn, demos=demos, instruction=args.instruction)
+        disc_input = qn
+        if not disc_input.startswith(Q_DELIM):
+            disc_input = Q_DELIM + " " + disc_input
         
-                sol = results[0]
-                gen_sols.append(sol)
-            
-            if not args.use_verifier: ## self-consistency
-                ## extract answers 
-                answers = [extract_answer_fn(x) for x in gen_sols]
-                answers = [a for a in answers if (a is not None and a != '[invalid]')]
-                
-                if len(answers) == 0: # all solutions are invalid -- do not have a final answer
-                    gen_sol = gen_sols[0] # pick any solution
-                else:
-                    ## pick the majority answer
-                    voted_answer = Counter(answers).most_common(1)[0][0]
-                    ## pick the first solution that has the voted answer
-                    gen_sol = None
-                    for i in range(len(gen_sols)):
-                        if extract_answer_fn(gen_sols[i]) == voted_answer:
-                            gen_sol = gen_sols[i]
-                            break
-                
-                assert gen_sol is not None
-                if is_correct(gen_sol, gt_ans, task=args.task):
-                    solve_rate += 1
-                text_table.add_data(qn, gt_ans, gen_sol)
-            
-            else:
-                all_solutions.append({"question": qn_with_input, 
-                                     "solutions": gen_sols,
-                                     "gt_ans": gt_ans})
-                                    
-        if args.use_verifier:
-            ## rank all solutions using verifier 
-            assert len(all_solutions) == len(eval_examples)
-            verifier_inputs = []
+        n_samples = args.n_verifier_samples if args.use_verifier else args.n_self_consistency
+        gen_sols = []
 
-            for i in tqdm(range(len(all_solutions))):
-                question = all_solutions[i]['question']
-                gen_sols = all_solutions[i]['solutions']
-                question_ids = verifier_tokenizer.encode(question, add_special_tokens=False)
-
-                for sol in gen_sols:
-                    sol_tokens = verifier_tokenizer.encode(sol, add_special_tokens=False)
-                    tokens = [verifier_tokenizer.cls_token_id] + question_ids + [verifier_tokenizer.sep_token_id] + sol_tokens
-                    verifier_inputs.append(tokens)
-
-            assert len(verifier_inputs) == len(eval_examples) * args.n_verifier_samples
-            ## pad verifier input ids
-
-            verifier_input_ids = pad_sequence([torch.tensor(x) for x in verifier_inputs], batch_first=True, padding_value=verifier_tokenizer.pad_token_id).to(args.device2)
-            verifier_attention_mask = (verifier_input_ids != verifier_tokenizer.pad_token_id).long()
-
-            correct_scores = []
-
-            ## feed to verifier and obtain scores
-            with torch.no_grad():
-                ## feed to verifier and obtain scores using args.batch_size
-                bsz = args.verifier_batch_size
-                for i in range(0, verifier_input_ids.shape[0], bsz):
-                    verifier_input_ids_batch = verifier_input_ids[i:i+bsz]
-                    verifier_attention_mask_batch = verifier_attention_mask[i:i+bsz]
-                    scores = verifier(input_ids=verifier_input_ids_batch, 
-                                    attention_mask=verifier_attention_mask_batch)
-                    scores = scores.cpu().numpy()
-                    scores = scores.reshape(-1, 2)
-                    correct_scores.extend(scores[:, 1])
-
-            assert len(correct_scores) == len(verifier_inputs)
-            correct_scores = np.array(correct_scores).reshape(-1, args.n_verifier_samples)
-
-            ## pick the best solution for each example
-            correct_idx = np.argmax(correct_scores, axis=1)
-
-            for i in range(len(eval_examples)):
-                qn, gt_ans = eval_examples[i]['question'], eval_examples[i]['answer'] if 'answer' in eval_examples[i] else eval_examples[i]['gt_sol']
-                gen_sols = all_solutions[i]['solutions']
-                best_sol_idx = correct_idx[i]
-                gen_sol = gen_sols[best_sol_idx]
-
-                if is_correct(gen_sol, gt_ans, task=args.task):
-                    solve_rate += 1
-                
-                text_table.add_data(qn, gt_ans, gen_sol)
-
-
-        wandb.log({"solve_rate": solve_rate / (len(eval_examples) + 1e-10)})
-        wandb.log({"outputs": text_table})
-        print("Solve rate = {:.2f}".format(solve_rate*100 / len(eval_examples)))
+        for _ in range(n_samples):
+            results = generate_guided_reasoning(
+                            model=model, 
+                            model_tokenizer=tokenizer,
+                            discriminator=discriminator,
+                            disc_tokenizer = disc_tokenizer,
+                            model_input_text=qn_with_input,
+                            disc_input_text=disc_input, 
+                            n_candidate_steps=args.n_candidate_steps,
+                            beta=args.beta,
+                            generation_type=args.generation_type,
+                            args=args,
+                            )
     
-    elif args.goal == 'sample':
-        assert args.step_selection_method == 'sample', "step selection method must be sample for sampling"
-        question_to_traj = {}
-        print("Sampling from generator with discriminator starting from example {} to {}".format(args.start_idx, end_idx))
-
-        for inp in tqdm(eval_examples):
-            qn, gt_ans = inp['question'], (inp['answer'] if 'answer' in inp else inp['gt_sol'])
-
-            qn_with_input = prepare_icl_input(qn, demos=demos, instruction=args.instruction)
-            disc_input = qn
-            if not disc_input.startswith(Q_DELIM):
-                disc_input = Q_DELIM + " " + disc_input
-            
-            question_to_traj[qn] = {
-                'gt_sol': gt_ans,
-                'trajectories': [],
-                'is_correct': []
-            }
-
-            trajs = []
-            is_cor = []
-            for _ in range(args.n_samples_per_example):
-                results = generate_guided_reasoning(
-                                model, 
-                                disc_tokenizer, 
-                                discriminator, 
-                                model_input_text=qn_with_input,
-                                disc_input_text=disc_input, 
-                                n_candidate_steps=args.n_candidate_steps,
-                                do_sample=args.do_sample,
-                                length_cutoff=args.length_cutoff,
-                                beta=args.beta,
-                                generation_type=args.generation_type,
-                                args=args,
-                                )
-                gen_sol = results[0]
-                trajs.append(gen_sol)
-                is_cor.append(is_correct(gen_sol, gt_ans, task=args.task))
-            
-            question_to_traj[qn]['trajectories'] = trajs
-            question_to_traj[qn]['is_correct'] = is_cor
+            sol = results[0]
+            gen_sols.append(sol)
         
-        ## save trajectories
-        if not os.path.exists(args.out_dir):
-            os.makedirs(args.out_dir)
+        if not args.use_verifier: ## self-consistency
+            ## extract answers 
+            answers = [extract_answer_fn(x) for x in gen_sols]
+            answers = [a for a in answers if (a is not None and a != '[invalid]')]
+            
+            if len(answers) == 0: # all solutions are invalid -- do not have a final answer
+                gen_sol = gen_sols[0] # pick any solution
+            else:
+                ## pick the majority answer
+                voted_answer = Counter(answers).most_common(1)[0][0]
+                ## pick the first solution that has the voted answer
+                gen_sol = None
+                for i in range(len(gen_sols)):
+                    if extract_answer_fn(gen_sols[i]) == voted_answer:
+                        gen_sol = gen_sols[i]
+                        break
+            
+            assert gen_sol is not None
+            if is_correct(gen_sol, gt_ans, task=args.task):
+                solve_rate += 1
+            text_table.add_data(qn, gt_ans, gen_sol)
         
-        out_file = os.path.join(args.out_dir, 'trajectories_{}_{}.jsonl'.format(args.start_idx, end_idx))
-        with open(out_file, 'w') as wf:
-            for qn, traj in question_to_traj.items():
-                wf.write(json.dumps({'question': qn, 'trajectories': traj['trajectories'], 'is_correct': traj['is_correct'], 'gt_sol': traj['gt_sol']}) + '\n')
+        else:
+            all_solutions.append({"question": qn_with_input, 
+                                    "solutions": gen_sols,
+                                    "gt_ans": gt_ans})
+                                
+    if args.use_verifier:
+        ## rank all solutions using verifier 
+        assert len(all_solutions) == len(eval_examples)
+        verifier_inputs = []
 
-        ## save sampling args 
-        args_file = os.path.join(args.out_dir, 'args.json')
-        with open(args_file, 'w') as wf:
-            json.dump(vars(args), wf)
+        for i in tqdm(range(len(all_solutions))):
+            question = all_solutions[i]['question']
+            gen_sols = all_solutions[i]['solutions']
+            question_ids = verifier_tokenizer.encode(question, add_special_tokens=False)
+
+            for sol in gen_sols:
+                sol_tokens = verifier_tokenizer.encode(sol, add_special_tokens=False)
+                tokens = [verifier_tokenizer.cls_token_id] + question_ids + [verifier_tokenizer.sep_token_id] + sol_tokens
+                verifier_inputs.append(tokens)
+
+        assert len(verifier_inputs) == len(eval_examples) * args.n_verifier_samples
+        ## pad verifier input ids
+
+        verifier_input_ids = pad_sequence([torch.tensor(x) for x in verifier_inputs], batch_first=True, padding_value=verifier_tokenizer.pad_token_id).to(args.device2)
+        verifier_attention_mask = (verifier_input_ids != verifier_tokenizer.pad_token_id).long()
+
+        correct_scores = []
+
+        ## feed to verifier and obtain scores
+        with torch.no_grad():
+            ## feed to verifier and obtain scores using args.batch_size
+            bsz = args.verifier_batch_size
+            for i in range(0, verifier_input_ids.shape[0], bsz):
+                verifier_input_ids_batch = verifier_input_ids[i:i+bsz]
+                verifier_attention_mask_batch = verifier_attention_mask[i:i+bsz]
+                scores = verifier(input_ids=verifier_input_ids_batch, 
+                                attention_mask=verifier_attention_mask_batch)
+                scores = scores.cpu().numpy()
+                scores = scores.reshape(-1, 2)
+                correct_scores.extend(scores[:, 1])
+
+        assert len(correct_scores) == len(verifier_inputs)
+        correct_scores = np.array(correct_scores).reshape(-1, args.n_verifier_samples)
+
+        ## pick the best solution for each example
+        correct_idx = np.argmax(correct_scores, axis=1)
+
+        for i in range(len(eval_examples)):
+            qn, gt_ans = eval_examples[i]['question'], eval_examples[i]['answer'] if 'answer' in eval_examples[i] else eval_examples[i]['gt_sol']
+            gen_sols = all_solutions[i]['solutions']
+            best_sol_idx = correct_idx[i]
+            gen_sol = gen_sols[best_sol_idx]
+
+            if is_correct(gen_sol, gt_ans, task=args.task):
+                solve_rate += 1
+            
+            text_table.add_data(qn, gt_ans, gen_sol)
+
+
+    wandb.log({"solve_rate": solve_rate / (len(eval_examples) + 1e-10)})
+    wandb.log({"outputs": text_table})
+    print("Solve rate = {:.2f}".format(solve_rate*100 / len(eval_examples)))
+    
 
 
 
