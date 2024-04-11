@@ -4,6 +4,7 @@
 
 
 # Updates:
+**March 2024**: GRACE has been incorporated into [LLM-reasoners](https://github.com/maitrix-org/llm-reasoners). Special thanks to the authors!
 
 **November 2023**: All GRACE discriminator checkpoints 🤖 are available for all six tasks!  
 
