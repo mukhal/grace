@@ -95,7 +95,7 @@ class T5Discriminator(torch.nn.Module):
 
 class T5EnergyDiscriminator(torch.nn.Module):
     '''
-    Disciminator takes a sequence of steps and produces and energy score for the whole sequence. Higher Energy means more likely to be correct.
+    Disciminator takes a sequence of steps and produces and score for the whole sequence. Higher score means more likely to be correct.
     IS comprised of a T5 encoder and a linear layer.
     '''
     def __init__(self, model_name_or_path, args=None, device='cuda'):
