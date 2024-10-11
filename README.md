@@ -106,12 +106,11 @@ Discriminators are available for all tasks: `gsm8k, svamp, multiarith, mathqa, t
 
 ## Citation
 If you use this code, please consider citing our paper
-```python
-@article{grace2023,
-  title={GRACE: Discriminator-Guided Chain-of-Thought Reasoning},
+```
+@article{khalifa2023grace,
+  title={Grace: Discriminator-guided chain-of-thought reasoning},
   author={Khalifa, Muhammad and Logeswaran, Lajanugen and Lee, Moontae and Lee, Honglak and Wang, Lu},
-  booktitle={The 2023 Conference on Empirical Methods in Natural Language Processing},
-  year={2023},
-  url={https://openreview.net/forum?id=2MiTZxLFA9}
+  journal={arXiv preprint arXiv:2305.14934},
+  year={2023}
 }
 ```
